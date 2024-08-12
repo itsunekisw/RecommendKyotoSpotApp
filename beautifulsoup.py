@@ -27,6 +27,18 @@ df = pd.DataFrame()
 # 観光地の取得数をカウント
 count = 0
 
+# テキストの前処理
+table = {
+    "\n": "",  # 改行を削除
+    "\r": "",  # 改行を削除
+    "(": "（",  # 全角に変更
+    ")": "）",  # 全角に変更
+    "[": "［",  # 全角に変更
+    "]": "］",  # 全角に変更
+    '"': "”",  # 全角に変更
+    "'": "’",  # 全角に変更
+}
+
 # 一覧のリンクを順に処理-------------
 for elem, pickup_link in zip(elems, pickup_links):
 
@@ -92,7 +104,12 @@ for elem, pickup_link in zip(elems, pickup_links):
         if len(comments) == 0:
             comments = page_soup.find_all("div", class_="item-reviewTextInner")
         for comment in comments:
-            new_list[3].append(comment.contents[0])
+            try:
+                text = comment.contents[0].translate(str.maketrans(table))
+            except:
+                text = comment.contents[0].contents[0].translate(str.maketrans(table))
+            print(text)
+            new_list[3].append(text)
             # print(comment.contents[0])
 
     # new_df: 現在のループの観光地の名前、口コミをまとめたデータフレーム------
@@ -109,3 +126,5 @@ df = df.reset_index()
 del df["index"]
 df.columns = ["Spot", "reviewTitle", "reviewScore", "reviewComment"]
 df.to_csv("output.csv", index=False, encoding="utf-8")
+
+# df

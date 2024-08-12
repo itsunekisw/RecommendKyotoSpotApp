@@ -55,10 +55,10 @@ model = SentenceLukeJapanese(MODEL_NAME)
 sentences = []
 
 # CSVファイルのパスを指定
-csv_file_path = "craftBeer.csv"
+csv_file_path = "output.csv"
 
 # 読み込む列の名前を指定
-target_column_name = "introduction_text"
+target_column_name = "reviewComment"
 
 # CSVファイルをDataFrameとして読み込む
 data = pd.read_csv(csv_file_path)
@@ -66,10 +66,10 @@ data = pd.read_csv(csv_file_path)
 # 指定した列のデータをリストに追加
 sentences = data[target_column_name].tolist()
 
-
 # 標準入力で、理想のビールのイメージを文章で受け取る
-query = input("理想のビールのイメージを文章で入力してください。\n")
+query = input("理想の旅行先のイメージを文章で入力してください。\n")
 sentences.append(query)
+# print("sentences\n", sentences)
 
 # ビールの説明文、受け取った文章をエンコード（ベクトル表現に変換）
 sentence_embeddings = model.encode(sentences, batch_size=8)
@@ -80,17 +80,22 @@ closest_n = 5
 distances = scipy.spatial.distance.cdist(
     [sentence_embeddings[-1]], sentence_embeddings, metric="cosine"
 )[0]
+# print("distances\n", distances)
 
 results = zip(range(len(distances)), distances)
 results = sorted(results, key=lambda x: x[1])
+# print("results\n", results)
 
 print("\n\n======================\n\n")
 print("Query:", query)
-print("\nオススメのクラフトビールは:")
-index = data[data["introduction_text"] == sentences[results[1][0]].strip()].index[0]
+print("\nオススメの京都の旅行先は:")
+
+# print(data.iloc[results[1][0]])
 
 for idx, distance in results[1 : closest_n + 1]:
-    print(data.iloc[index, 1])
+    print("旅行先\t\t", data.iloc[idx, 0])
+    print("タイトル\t", data.iloc[idx, 1])
+    print("評価\t\t", data.iloc[idx, 2])
 
-    print(sentences[idx].strip())
-    print("類似度", 1 - distance, "\n")
+    print("口コミ\t\t", sentences[idx].strip())
+    print("類似度\t\t", 1 - distance, "\n")

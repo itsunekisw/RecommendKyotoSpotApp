@@ -86,11 +86,11 @@ results = sorted(results, key=lambda x: x[1])
 
 print("\n\n======================\n\n")
 print("Query:", query)
-print("\nオススメのクラフトビールは:")
+print("\nオススメのクラフトビールは:\n")
 index = data[data["introduction_text"] == sentences[results[1][0]].strip()].index[0]
 
 for idx, distance in results[1 : closest_n + 1]:
-    print(data.iloc[index, 1])
+    print(data.iloc[idx, 1])
 
     print(sentences[idx].strip())
     print("類似度", 1 - distance, "\n")
