@@ -1,4 +1,8 @@
 # conda activate language
+# conda install transformers
+# conda install sentencepiece
+# pip install torch
+# pip install scipy
 
 import requests
 from bs4 import BeautifulSoup
