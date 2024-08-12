@@ -1,8 +1,9 @@
-# conda activate language
 # conda install transformers
 # conda install sentencepiece
 # pip install torch
 # pip install scipy
+
+# conda activate language
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,6 +23,9 @@ pickup_links = [elem.attrs["href"] for elem in elems]
 
 # csvファイル化するためのデータフレーム
 df = pd.DataFrame()
+
+# 観光地の取得数をカウント
+count = 0
 
 # 一覧のリンクを順に処理-------------
 for elem, pickup_link in zip(elems, pickup_links):
@@ -58,10 +62,11 @@ for elem, pickup_link in zip(elems, pickup_links):
     # 観光地の名前----------------
     spot_path = page1_soup.find("p", class_="detailTitle")
     spot = spot_path.contents[0]
-    # print("\nSightseeingSpot: ", spot)
+    print("\nSightseeingSpot: ", spot)
+    count += 1
 
     # その観光地の名前、タイトル・スコア・口コミをまとめたリスト----
-    new_list = [[spot], [spot], [spot]]
+    new_list = [[spot] * 20, [], [], []]
 
     # 各ページについてスクレイピング
     for page_soup in soups[:-1]:
@@ -70,36 +75,37 @@ for elem, pickup_link in zip(elems, pickup_links):
         if len(titles) == 0:
             titles = page_soup.find_all("p", class_="item-title", limit=10)
             for title in titles:
-                new_list[0].append(title.contents[0].contents[0])
+                new_list[1].append(title.contents[0].contents[0])
                 # print(title.contents[0].contents[0])
         else:
             for title in titles:
-                new_list[0].append(title.contents[0])
+                new_list[1].append(title.contents[0])
                 # print(title.contents[0])
 
         # scores: 口コミスコア----------
         scores = page_soup.find_all(class_="reviewPoint", limit=11)
         for score in scores[1:]:
-            new_list[1].append(score.contents[0])
+            new_list[2].append(score.contents[0])
 
         # comments: 口コミ内容-------------
         comments = page_soup.find_all("p", class_="reviewCassette__comment", limit=10)
         if len(comments) == 0:
             comments = page_soup.find_all("div", class_="item-reviewTextInner")
         for comment in comments:
-            new_list[2].append(comment.contents[0])
+            new_list[3].append(comment.contents[0])
+            # print(comment.contents[0])
 
     # new_df: 現在のループの観光地の名前、口コミをまとめたデータフレーム------
     new_df = pd.DataFrame(data=new_list)
+    new_df = new_df.T
     df = df._append(new_df)
 
     # 観光地が30か所集まったらスクレイピング終了
-    if df.shape[0] == 90:
+    if count == 30:
         print("break!")
         break
 
 df = df.reset_index()
 del df["index"]
+df.columns = ["Spot", "reviewTitle", "reviewScore", "reviewComment"]
 df.to_csv("output.csv", index=False, encoding="utf-8")
-
-print(df)
