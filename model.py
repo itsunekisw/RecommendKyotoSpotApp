@@ -9,7 +9,7 @@ import pandas as pd
 
 
 class SentenceLukeJapanese:
-    # インスタンス化--------------------------------------------------------------------------
+    # インスタンス化----------------------------------------------------------------
     def __init__(self, model_name_or_path, device=None):
         self.tokenizer = MLukeTokenizer.from_pretrained(model_name_or_path)
         self.model = LukeModel.from_pretrained(model_name_or_path)
@@ -33,7 +33,7 @@ class SentenceLukeJapanese:
         # attention_mask: パディングされたトークンを示し、パディング部分は0、それ以外は1となっている
         # unsqueeze(-1): マスクに新しい次元を追加
         # [batch_size, sequence_length, 1]
-        # expand: 追加された時限をtoken_embeddingsと同じ形状に拡張
+        # expand: 追加された次元をtoken_embeddingsと同じ形状に拡張
         # [batch_size, sequence_length, hidden_size]
         # float: マスクを小数にすることで、計算が行いやすくなる
         input_mask_expanded = (
@@ -42,9 +42,10 @@ class SentenceLukeJapanese:
 
         # 文全体の平均埋め込みベクトルを計算------------------------------------
         # attention_maskに基づいてマスクされたトークン埋め込みを取得し、それらの埋め込みを平均化
-        # torch.clump: ゼロ除算を避けるために使用
+        # torch.clump: ゼロ除算を避けるために使用（clump = 固定）
         # torch.sum(..., 1): 第2次元"sequence_length"に沿って操作を計算
         # min = 1e-9: ゼロ除算を避けるために設定した最小値
+        # sum(1): 第2次元（"sequence_length"）について総和を計算
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
             input_mask_expanded.sum(1), min=1e-9
         )
