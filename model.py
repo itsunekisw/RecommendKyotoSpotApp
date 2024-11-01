@@ -57,6 +57,15 @@ class SentenceLukeJapanese:
         self.data = pd.read_csv(csv_file_path)
         self.sentences = self.data[target_column_name].tolist()
 
+    def update_csv(self, csv_file_path, target_column_name):
+        df = pd.read_csv(csv_file_path)
+        self.texts = self.data[target_column_name].tolist()
+        texts_embedding = self.encode(self.texts, batch_size=8)
+        print(texts_embedding)
+        df["vector"] = texts_embedding.tolist()
+        print(df)
+        df.to_csv(csv_file_path)
+
     def recommend(self, query):
         self.sentences.append(query)
         print("Encoding sentences...", end=" ")
@@ -81,18 +90,19 @@ model = SentenceLukeJapanese(MODEL_NAME)
 csv_file_path = "output.csv"
 target_column_name = "reviewComment"
 model.read_csv(csv_file_path, target_column_name)
+model.update_csv(csv_file_path, target_column_name)
 
-query = input("理想の旅行先のイメージを文章で入力してください。\n")
-results = model.recommend(query)
+# query = input("理想の旅行先のイメージを文章で入力してください。\n")
+# results = model.recommend(query)
 
 # 類似度上位5つを出力
-closest_n = 5
-print("======================")
-print("Query:", query)
-print("\nオススメの京都の旅行先は:")
-for idx, distance in results[1 : closest_n + 1]:
-    print("旅行先\t\t", model.data.iloc[idx, 0])
-    print("タイトル\t", model.data.iloc[idx, 1])
-    print("評価\t\t", model.data.iloc[idx, 2])
-    print("口コミ\t\t", model.sentences[idx].strip())
-    print("類似度\t\t", 1 - distance, "\n")
+# closest_n = 5
+# print("======================")
+# print("Query:", query)
+# print("\nオススメの京都の旅行先は:")
+# for idx, distance in results[1 : closest_n + 1]:
+#     print("旅行先\t\t", model.data.iloc[idx, 0])
+#     print("タイトル\t", model.data.iloc[idx, 1])
+#     print("評価\t\t", model.data.iloc[idx, 2])
+#     print("口コミ\t\t", model.sentences[idx].strip())
+#     print("類似度\t\t", 1 - distance, "\n")
