@@ -1,5 +1,4 @@
 # conda install transformers
-# conda install sentencepiece
 # pip install torch
 # pip install scipy
 
@@ -17,14 +16,10 @@ soup = BeautifulSoup(res.content, "html.parser")
 # これしないと文字化け
 soup = BeautifulSoup(res.content.decode("Shift-JIS", "ignore"), "html.parser")
 
-# re.compile: href属性の中で引数を含むもののみ抽出
 elems = soup.find_all(href=re.compile("/kuchikomi"))
 pickup_links = [elem.attrs["href"] for elem in elems]
 
-# csvファイル化するためのデータフレーム
 df = pd.DataFrame()
-
-# 観光地の取得数をカウント
 count = 0
 
 # テキストの前処理

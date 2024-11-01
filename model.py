@@ -30,7 +30,7 @@ class SentenceLukeJapanese:
             input_mask_expanded.sum(1), min=1e-9
         )
 
-    # 勾配の計算を無効にし、メモリ使用量を節約する（PyTorchのデコレータで、今回はモデルの学習は行わず、推論のみを行なう）
+    # 勾配の計算を無効にし、メモリ使用量を節約（PyTorchのデコレータで、今回はモデルの学習は行わず、推論のみを行なう）
     @torch.no_grad()
     def encode(self, sentences, batch_size=8):
         all_embeddings = []
@@ -43,10 +43,8 @@ class SentenceLukeJapanese:
                 batch, padding="longest", truncation=True, return_tensors="pt"
             ).to(self.device)
 
-            # トークン化文章からモデル出力を取得
+            # トークン化文章からモデル出力を取得し、
             model_output = self.model(**encoded_input)
-
-            # _mean_poolingを使用して文章全体の埋め込みを計算
             sentence_embeddings = self._mean_pooling(
                 model_output, encoded_input["attention_mask"]
             ).to("cpu")
