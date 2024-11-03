@@ -1,5 +1,5 @@
 # Recommend Kyoto Spot App
-## Environmentd
+## Environment
 - python = 3.11.7
 - transformers
 - pytorch
@@ -26,5 +26,5 @@
 - レビューの評価
 - レビューのコメント
 
-## Image
+## Output Image
 ![image](prompt.png)
