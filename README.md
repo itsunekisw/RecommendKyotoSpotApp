@@ -6,11 +6,6 @@
 - scipy
 - (conda activate language)
 
-## Input
-『理想の旅行先のイメージを文章で入力してください』という指示に従って、日本語で希望の旅行先のイメージを入力
-### 入力例
-「家族で楽しめる」
-
 ## Algorithm
 1. じゃらんのWebページからBeautifulSoup.pyでスクレイピングした結果をoutput.csvに保存
 2. model.pyのSentencLukeJapaneseクラス内のupdata_csv関数を用いて、レビューのコメントをベクトル化
@@ -25,6 +20,11 @@
 - レビューのタイトル
 - レビューの評価
 - レビューのコメント
+
+## Input
+『理想の旅行先のイメージを文章で入力してください』という指示に従って、日本語で希望の旅行先のイメージを入力
+### 入力例
+「家族で楽しめる」
 
 ## Output Image
 ![image](prompt.png)
