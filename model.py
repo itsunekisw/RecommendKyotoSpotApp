@@ -1,7 +1,9 @@
 from transformers import MLukeTokenizer, LukeModel
 import torch
-import scipy.spatial
+from scipy.spatial import distance
 import pandas as pd
+import numpy as np
+import ast
 
 
 class SentenceLukeJapanese:
@@ -15,94 +17,109 @@ class SentenceLukeJapanese:
         self.device = torch.device(device)
         self.model.to(device)
 
-    # モデル出力のトークン埋め込みを平均化し、その値とマスクをかけ合わせ、合計を計算-----------------------
+    # モデル出力と拡張分を0にするマスクをかけ合わせ、平均を計算
     def _mean_pooling(self, model_output, attention_mask):
-        # モデルの出力であるトークンの埋め込み行列取得 [batch_size, sequence_length, hidden_size]
         token_embeddings = model_output[0]
-
-        # マスクの次元をtoken_embeddingsと同じ形状に拡張[batch_size, sequence_length, 1] => [batch_size, sequence_length, hidden_size]
         input_mask_expanded = (
             attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
         )
-
-        # 文全体の平均埋め込みベクトルを計算、sum(1): 第2次元（"sequence_length"）について総和を計算
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
             input_mask_expanded.sum(1), min=1e-9
         )
 
-    # 勾配の計算を無効にし、メモリ使用量を節約（PyTorchのデコレータで、今回はモデルの学習は行わず、推論のみを行なう）
+    # 複数の文章をベクトル化
     @torch.no_grad()
     def encode(self, sentences, batch_size=8):
         all_embeddings = []
         iterator = range(0, len(sentences), batch_size)
+        print("Encoding sentences...", end=" ")
         for batch_idx in iterator:
             batch = sentences[batch_idx : batch_idx + batch_size]
-
             # 文章をトークン化
             encoded_input = self.tokenizer.batch_encode_plus(
                 batch, padding="longest", truncation=True, return_tensors="pt"
             ).to(self.device)
-
-            # トークン化文章からモデル出力を取得し、
+            # トークンごとにベクトル化
             model_output = self.model(**encoded_input)
+            # 文章全体のベクトルを各トークンのベクトルの平均とする
             sentence_embeddings = self._mean_pooling(
                 model_output, encoded_input["attention_mask"]
             ).to("cpu")
             all_embeddings.extend(sentence_embeddings)
-
+        print("Done!")
         return torch.stack(all_embeddings)
 
+    # 指定したCSVファイルの指定した列をリスト化
     def read_csv(self, csv_file_path, target_column_name):
-        self.sentences = []
-        self.data = pd.read_csv(csv_file_path)
-        self.sentences = self.data[target_column_name].tolist()
+        self.data = pd.read_csv(csv_file_path, index_col=0)
+        # apply(ast.literal_eval): 文字列として入っているリストをlist型に変換
+        self.vectors = self.data[target_column_name].apply(ast.literal_eval)
+        self.sentence_embeddings = []
+        for vector in self.vectors:
+            self.sentence_embeddings.append(vector)
 
+    # CSVに集められたテキストをベクトル化してCSVに保存
     def update_csv(self, csv_file_path, target_column_name):
-        df = pd.read_csv(csv_file_path)
-        self.texts = self.data[target_column_name].tolist()
+        df = pd.read_csv(csv_file_path, index_col=0)
+        self.texts = df[target_column_name].tolist()
         texts_embedding = self.encode(self.texts, batch_size=8)
-        print(texts_embedding)
         df["vector"] = texts_embedding.tolist()
-        print(df)
         df.to_csv(csv_file_path)
 
+    # 入力された文章をベクトル化して、類似度の高い順にindexを返す
     def recommend(self, query):
-        self.sentences.append(query)
-        print("Encoding sentences...", end=" ")
-        sentence_embeddings = self.encode(self.sentences, batch_size=8)
-        print("Done!")
-        # 入力した文章と他のすべての文章との間のコサイン距離が計算される
-        distances = scipy.spatial.distance.cdist(
+        query_embedding = self.encode([query], batch_size=8)
+        # 既にエンコードした600文のベクトルと入力された文章の1文を結合
+        sentence_embeddings = np.concatenate(
+            (self.sentence_embeddings, query_embedding), axis=0
+        )
+        # 入力した文章と他の文章との類似度を計算
+        distances = distance.cdist(
             [sentence_embeddings[-1]], sentence_embeddings, metric="cosine"
         )[0]
-        # インデックスと距離をペアにし、コサイン距離x[1]を基準にソート
+        # indexと距離をペアにし、類似度x[1]を基準にソート
         results = zip(range(len(distances)), distances)
         results = sorted(results, key=lambda x: x[1])
-
         return results
 
 
-# 既存モデルの読み込み
-MODEL_NAME = "sonoisa/sentence-luke-japanese-base-lite"
-model = SentenceLukeJapanese(MODEL_NAME)
+def recommendSpot(query, num):
+    print("======================")
+    print("Query:", query)
+    print("\nお勧めの京都の旅行先は:")
+    data = model.data
+    for idx, distance in results[1 : num + 1]:
+        review = data.iloc[idx]
+        print("Tourist Spot\t", review["Spot"])
+        print("Review Title\t", review["reviewTitle"])
+        print("Review Score\t", review["reviewScore"])
+        # strip(): 文字列内の空白文字を全て消去
+        print("Review Comment\t", review["reviewComment"].strip())
+        print("Similarity\t", 1 - distance, "\n")
 
-# 口コミを取得してリスト化
-csv_file_path = "output.csv"
-target_column_name = "reviewComment"
-model.read_csv(csv_file_path, target_column_name)
-model.update_csv(csv_file_path, target_column_name)
 
-# query = input("理想の旅行先のイメージを文章で入力してください。\n")
-# results = model.recommend(query)
+if __name__ == "__main__":
+    # 既存モデルの読み込み
+    MODEL_NAME = "sonoisa/sentence-luke-japanese-base-lite"
+    model = SentenceLukeJapanese(MODEL_NAME)
 
-# 類似度上位5つを出力
-# closest_n = 5
-# print("======================")
-# print("Query:", query)
-# print("\nオススメの京都の旅行先は:")
-# for idx, distance in results[1 : closest_n + 1]:
-#     print("旅行先\t\t", model.data.iloc[idx, 0])
-#     print("タイトル\t", model.data.iloc[idx, 1])
-#     print("評価\t\t", model.data.iloc[idx, 2])
-#     print("口コミ\t\t", model.sentences[idx].strip())
-#     print("類似度\t\t", 1 - distance, "\n")
+    # 口コミを取得してリスト化
+    csv_file_path = "output.csv"
+    model.read_csv(csv_file_path, "vector")
+    # model.update_csv(csv_file_path, "reviewComment")
+
+    query = input(
+        "\n理想の旅行先のイメージを文章で入力してください。　例)『家族で楽しめる』『綺麗な景色』『歴史的な街並み』\n"
+    )
+    results = model.recommend(query)
+    while True:
+        try:
+            closest_n = int(
+                input("\n何個観光地をお勧めしてほしいか、正の整数で入力してください。")
+            )
+            if closest_n <= 0 or closest_n % 1 != 0:
+                continue
+            break
+        except:
+            continue
+    recommendSpot(query, closest_n)
