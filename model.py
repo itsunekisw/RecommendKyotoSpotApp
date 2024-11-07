@@ -114,6 +114,7 @@ def recommendSpot(query, closest_n):
         # strip(): 文字列内の空白文字を全て消去
         print("Review Comment\t", review["reviewComment"].strip())
         print("Similarity\t", 1 - distance, "\n")
+    return results[1 : closest_n + 1], model.data.iloc[1:]
 
 
 if __name__ == "__main__":
