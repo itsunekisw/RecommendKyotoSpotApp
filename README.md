@@ -9,7 +9,7 @@
 ## Desktop App
 ### 1. Execute KyotoRecommendApp.py.
 - `python KyotoRecommendApp.py`
-### 2. Input your Ideal Tourist Spot in Japanese.
+### 2. Input a description of your Ideal Travel Destination in Japanese.
 - For example, "家族で楽しめる", "綺麗な景色", "歴史的な街並み", stc.
 
 <img src="images/input_image.png">

@@ -17,7 +17,7 @@ class RecommendApp(tkinter.Frame):
         self.message = tkinter.Message(self)
         self.message["width"] = 600
         self.message["text"] = (
-            "\nInput a description of your ideal travel destination in Japanese.\n"
+            "\nInput a description of your Ideal Travel Destination in Japanese.\n"
         )
         self.message.pack()
         # テキストボックス
@@ -49,7 +49,7 @@ class RecommendApp(tkinter.Frame):
             self.result_titles.append(self.result_title)
             # レビューコメント出力
             self.result_comment = tkinter.Message(self)
-            self.result_comment["width"] = 600
+            self.result_comment["width"] = 700
             self.result_comment.pack()
             self.result_comments.append(self.result_comment)
         # 終了ボタン
