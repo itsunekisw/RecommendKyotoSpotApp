@@ -6,6 +6,19 @@
 - scipy = 1.11.4
 - (conda activate language)
 
+## Desktop App
+### 1. Execute KyotoRecommendApp.py.
+- `python KyotoRecommendApp.py`
+### 2. Input your Ideal Tourist Spot in Japanese.
+- For example, "家族で楽しめる", "綺麗な景色", "歴史的な街並み", stc.
+
+<img src="images/input_image.png">
+
+### 3. Click Enter button, or "EXECUTE" button.
+### 4. You will see recommended Tourist spots in Kyoto.
+
+<img src="images/output_image.png">
+
 ## Algorithm
 1. じゃらんのWebページからBeautifulSoup.pyでスクレイピングした結果をoutput{%Y%m%d}.csvに保存
 2. model.pyのSentencLukeJapaneseクラス内のupdate_csv関数を用いて、レビューのコメントをベクトル化
@@ -26,7 +39,7 @@
 ### 入力例
 「家族で楽しめる」
 
-## Output Image
+## Output Prompt
 - 入力されたユーザーの希望に近いレビューを探索して、上位の結果を出力してくれる
 
 ![image](images/prompt.png)

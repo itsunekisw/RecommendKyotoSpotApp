@@ -4,7 +4,7 @@ from model import recommendSpot
 
 class RecommendApp(tkinter.Frame):
     def __init__(self, root=None):
-        super().__init__(root, width=800, height=730, borderwidth=4, relief="groove")
+        super().__init__(root, width=800, height=830, borderwidth=4, relief="groove")
         self.root = root
         self.pack()
         self.results = None
@@ -26,7 +26,7 @@ class RecommendApp(tkinter.Frame):
         self.text_box.pack()
         # 実行ボタン
         submit_btn = tkinter.Button(self)
-        submit_btn["text"] = "Recommend"
+        submit_btn["text"] = "EXECUTE"
         submit_btn["command"] = self.recommend
         submit_btn.pack()
         # Enterキーを押しても実行できる
@@ -75,6 +75,6 @@ class RecommendApp(tkinter.Frame):
 
 root = tkinter.Tk()
 root.title("Kyoto Recommend App")
-root.geometry("850x750")
+root.geometry("850x850")
 app = RecommendApp(root=root)
 root.mainloop()
