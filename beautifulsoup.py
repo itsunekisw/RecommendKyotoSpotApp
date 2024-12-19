@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import datetime
+import time
 
 
 def create_csv(num_spot=30):
     # じゃらんのURLにアクセス
     url = "https://www.jalan.net/kankou/260000/"
     res = requests.get(url)
+    time.sleep(1)
 
     # これしないと文字化け
     soup = BeautifulSoup(res.content.decode("Shift-JIS", "ignore"), "html.parser")
@@ -99,6 +101,7 @@ def scraping_target(target, page_soup, output_list):
 def create_soups(pickup_link):
     # requests.get(): ページ1のsoupオブジェクト作成
     page1_res = requests.get("https:" + pickup_link)
+    time.sleep(1)
     page1_soup = BeautifulSoup(
         page1_res.content.decode("Shift-JIS", "ignore"), "html.parser"
     )
@@ -107,6 +110,7 @@ def create_soups(pickup_link):
     page2_elem = page1_soup.find(href=re.compile("/page_2/"))
     page2_link = page2_elem.attrs["href"]
     page2_res = requests.get(page2_link)
+    time.sleep(1)
     page2_soup = BeautifulSoup(
         page2_res.content.decode("Shift-JIS", "ignore"), "html.parser"
     )

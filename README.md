@@ -7,6 +7,7 @@
 - (conda activate language)
 - pandas = 2.2.3
 - sentensepiece = 0.2.0
+- beautifulsoup4 = 4.12.3
 
 ## Desktop App
 ### 1. Execute KyotoRecommendApp.py.
