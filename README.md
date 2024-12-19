@@ -1,10 +1,12 @@
 # Recommend Kyoto Spot App
 ## Environment
 - python = 3.11.7
-- transformers = 2.17.0
+- transformers = 4.17.0
 - pytorch = 2.4.0
 - scipy = 1.11.4
 - (conda activate language)
+- pandas = 2.2.3
+- sentensepiece = 0.2.0
 
 ## Desktop App
 ### 1. Execute KyotoRecommendApp.py.
